@@ -1,3 +1,13 @@
+terraform {
+  backend "remote" {
+    organization = "gianghp"
+
+    # The name of the Terraform Cloud workspace to store Terraform state files in.
+    workspaces {
+      name = "simple-ai-sum"
+    }
+  }
+}
 provider "aws" {
   region = var.region
 }
@@ -17,9 +27,9 @@ module "dynamodb" {
 module "lambda" {
   source = "./modules/lambdas"
 
-  project_name         = var.project_name
-  environment          = var.environment
-  dynamo_table_arns    = values(module.dynamodb.table_arns)
+  project_name      = var.project_name
+  environment       = var.environment
+  dynamo_table_arns = values(module.dynamodb.table_arns)
 
   functions = {
     summarize = {
@@ -33,15 +43,15 @@ module "lambda" {
 module "s3" {
   source = "./modules/s3"
 
-  project_name = var.project_name
-  environment  = var.environment
-  path_root = "${path.root}/.."
+  project_name    = var.project_name
+  environment     = var.environment
+  path_root       = "${path.root}/.."
   frontend_folder = "frontend"
 }
 
 module "api-gateway" {
-  source = "./modules/api-gateway"
-  project_name = var.project_name
-  environment = var.environment
+  source           = "./modules/api-gateway"
+  project_name     = var.project_name
+  environment      = var.environment
   lambda_functions = module.lambda.lambda_fuction_names
 }
